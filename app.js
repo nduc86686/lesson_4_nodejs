@@ -41,28 +41,29 @@ loremStream.pipe(writeStream);
 writeStream.on('finish', () => {
     console.log(`File ${filename} đã được tạo`);
     writeStream.end(); // đóng stream sau khi ghi xong dữ liệu
-});
-
-
-// Tạo một Transform stream để chuyển đổi dữ liệu sang viết hoa
-const upperCaseTransform = new Transform({
-    transform(chunk, encoding, callback) {
-        const upperCaseChunk = chunk.toString().toUpperCase();
-        callback(null, upperCaseChunk);
-    },
-});
-// Đọc nội dung của file bất đồng bộ và ghi vào file khác
-fs.createReadStream(filepath)
-    .pipe(upperCaseTransform)
-    .pipe(fs.createWriteStream(filepathOutput))
-    .on('finish', () => {
-        console.log(`Data has been written to file ${filepathOutput} successfully.`);
-        // đóng stream sau khi ghi xong dữ liệu
-        fs.closeSync(fs.openSync(filepathOutput, 'r'));
-    })
-    .on('error', (err) => {
-        console.error(`Error occurred while writing data to file: ${err}`);
+    // Tạo một Transform stream để chuyển đổi dữ liệu sang viết hoa
+    const upperCaseTransform = new Transform({
+        transform(chunk, encoding, callback) {
+            const upperCaseChunk = chunk.toString().toUpperCase();
+            callback(null, upperCaseChunk);
+        },
     });
+// Đọc nội dung của file bất đồng bộ và ghi vào file khác
+    fs.createReadStream(filepath)
+        .pipe(upperCaseTransform)
+        .pipe(fs.createWriteStream(filepathOutput))
+        .on('finish', () => {
+            console.log(`Data has been written to file ${filepathOutput} successfully.`);
+            // đóng stream sau khi ghi xong dữ liệu
+            fs.closeSync(fs.openSync(filepathOutput, 'r'));
+        })
+        .on('error', (err) => {
+            console.error(`Error occurred while writing data to file: ${err}`);
+        });
+});
+
+
+
 
 
 
