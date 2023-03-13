@@ -10,7 +10,8 @@ const filepath = path.join(__dirname, filename);
 const filepathOutput = path.join(__dirname, filenameOutput);
 
 const writeStream = fs.createWriteStream(filepath);
-
+const fileSizeLimitInBytes = 1024 * 1024 * 512; // 10MB
+let bytesWritten = 0;
 
 // Tạo stream để ghi các dòng vào file
 //Đoạn mã đó tạo một stream mới để ghi các dòng vào file. Cụ thể, đoạn mã này sử dụng lớp stream.Readable của Node.js để tạo stream mới. Để tạo stream mới này, ta truyền vào một đối tượng có phương thức read.
@@ -38,7 +39,17 @@ loremStream.count = 0;
 // Ghi stream vào file
 loremStream.pipe(writeStream);
 
-writeStream.on('finish', () => {
+//lắng nghe giới hạn file
+loremStream.on('data', (chunk)=>{
+    bytesWritten += chunk.length;
+    if (bytesWritten > fileSizeLimitInBytes) {
+        writeStream.destroy();
+        console.log('File size limit exceeded. File deleted.');
+    }
+});
+
+//lắng nghe sự kiện kết thúc ghi file và ghi ra file output.txt
+writeStream.on('close', () => {
     console.log(`File ${filename} đã được tạo`);
     writeStream.end(); // đóng stream sau khi ghi xong dữ liệu
     // Tạo một Transform stream để chuyển đổi dữ liệu sang viết hoa
